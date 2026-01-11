@@ -1,5 +1,5 @@
 from django.contrib import admin
-from bookshelf.models import Book
+from . models import Book
 
 # Customise admin interface
 class BookAdmin(admin.ModelAdmin):
