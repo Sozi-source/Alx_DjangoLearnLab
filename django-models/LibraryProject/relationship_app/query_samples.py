@@ -4,7 +4,7 @@ from relationship_app.models import Book, Author, Library, Librarian
 def book_by_author(author_name):
     try:
         author = Author.objects.get(name=author_name)
-        books = Book.objects.filter(author= author)
+        books = Book.objects.filter(author=author)
         print(f"Books by {author_name}:")
 
         for book in books:
