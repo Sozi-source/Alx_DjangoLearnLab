@@ -7,7 +7,8 @@ from django.views.generic import CreateView
 from django.contrib.auth import login
 from django.shortcuts import render, redirect
 from django.contrib import messages
-
+from django.shortcuts import render
+from django.contrib.auth.decorators import user_passes_test
 
 # Create your views here.
 def list_books(request):
@@ -37,6 +38,26 @@ def register(request):
     return render (request, 'relationship_app/register.html', {'form':form})
 
 
+# admin
+def is_admin(user):
+    return user.is_authenticated and user.userprofile.role =='ADMIN'
 
+@user_passes_test(is_admin)
+def admin_view(request):
+    return render (request, 'admin_view.html')
 
+# librarian
+def is_librarian(user):
+    return user.is_authenticated and user.profile.role =='LIBRARIAN'
 
+@user_passes_test(is_librarian)
+def librarian_view(request):
+    return render(request, 'librarian_view.html')
+
+# member
+def is_member(user):
+    return user.is_authenticated and user.profile.role =='MEMBER'
+
+@user_passes_test(is_member)
+def member_view(request):
+    return render(request, 'member_view.html ')
