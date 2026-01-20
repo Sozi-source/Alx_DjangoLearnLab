@@ -32,7 +32,7 @@ class Librarian(models.Model):
         return self.name
 
 
-class  UserProfile(models.Model):
+class UserProfile(models.Model):
   
     ADMIN = 'Admin'
     LIBRARIAN = 'Librarian'
