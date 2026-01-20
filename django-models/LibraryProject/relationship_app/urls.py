@@ -38,4 +38,13 @@ urlpatterns = [
     path('admin/', admin_view, name='admin_view'),
     path('librarian/', librarian_view, name='librarian_view'),
     path('member/', member_view, name='member_view'),
+
+    # Add a new book (requires permission)
+    path('books/add/', views.add_book, name='add_book'),
+
+    # Edit an existing book (requires permission)
+    path('books/<int:pk>/edit/', views.edit_book, name='edit_book'),
+
+    # Delete a book (requires permission)
+    path('books/<int:pk>/delete/', views.delete_book, name='delete_book'),
 ]
