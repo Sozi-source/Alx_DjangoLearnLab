@@ -40,11 +40,11 @@ urlpatterns = [
     path('member/', member_view, name='member_view'),
 
     # Add a new book (requires permission)
-    path('books/add/', views.add_book, name='add_book'),
+    path('add_book/', views.add_book, name='add_book'),
 
     # Edit an existing book (requires permission)
-    path('books/<int:pk>/edit/', views.edit_book, name='edit_book'),
+    path('edit_book/', views.edit_book, name='edit_book'),
 
     # Delete a book (requires permission)
-    path('books/<int:pk>/delete/', views.delete_book, name='delete_book'),
+    path('delete_book/', views.delete_book, name='delete_book'),
 ]
