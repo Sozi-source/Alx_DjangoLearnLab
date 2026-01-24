@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from .models import Book, CustomUser
 from django.shortcuts import redirect
+from forms import ExampleForm
 
 # ===== ROLE CHECK FUNCTIONS =====
 def is_admin(user):
