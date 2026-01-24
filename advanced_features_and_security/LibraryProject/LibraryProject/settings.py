@@ -45,6 +45,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'csp.middleware.CSPMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -135,3 +136,11 @@ X_FRAME_OPTIONS = 'DENY'
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 
+
+# Content Security Policy (CSP) Settings
+CSP_DEFAULT_SRC = ("'self'",)
+
+CSP_SCRIPT_SRC = (
+    "'self'",
+    "https://cdnjs.cloudflare.com",
+)
