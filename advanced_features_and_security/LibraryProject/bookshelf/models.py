@@ -10,12 +10,8 @@ class Book(models.Model):
     def __str__(self):
         return f"{self.title}-{self.author} ({self.publication_year})"
 
-# Custom User Model
-class CustomUser(AbstractUser):
-    date_of_birth= models.DateField(null=True, blank=True)
-    profile_photo= models.ImageField(upload_to='profile_photos/', null=True, blank=True)
 
-# Custom User Manager
+# Custom User Manager - Define this BEFORE CustomUser
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
         if not email:
@@ -36,3 +32,16 @@ class CustomUserManager(BaseUserManager):
             raise ValueError('Superuser must have is_superuser=True.')
 
         return self.create_user(username, email, password, **extra_fields)
+
+
+# Custom User Model
+class CustomUser(AbstractUser):
+    date_of_birth = models.DateField(null=True, blank=True)
+    profile_photo = models.ImageField(upload_to='profile_photos/', null=True, blank=True)
+    
+    # === ADD THIS LINE ===
+    objects = CustomUserManager()
+    # =====================
+    
+    def __str__(self):
+        return self.username
