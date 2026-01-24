@@ -45,3 +45,10 @@ class CustomUser(AbstractUser):
     
     def __str__(self):
         return self.username
+    
+
+# class UserPermission(models.Model):
+#     is_admin = models.BooleanField(default=False)
+#     can_add_book = models.BooleanField(default=False)
+#     can_delete_book = models.BooleanField(default=False)
+#     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='permissions')
