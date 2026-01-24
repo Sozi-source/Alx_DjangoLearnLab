@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
-# Create your models here.
 class Book(models.Model):
     title = models.CharField(max_length=200)
     author = models.CharField(max_length=100)
@@ -9,9 +8,17 @@ class Book(models.Model):
 
     def __str__(self):
         return f"{self.title}-{self.author} ({self.publication_year})"
+    
+    class Meta:
+        permissions= [
+            ('can_add_book', 'Can add book'),
+            ('can_delete_book', 'Can delete book'),
+            ('can_view_book', 'Can view book'),
+            ('can_edit_book', 'Can edit book'),  
+        ]
 
 
-# Custom User Manager - Define this BEFORE CustomUser
+# Custom User Manager
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
         if not email:
@@ -34,21 +41,28 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(username, email, password, **extra_fields)
 
 
-# Custom User Model
+# Custom User Model - UPDATED WITH ROLE FIELD
 class CustomUser(AbstractUser):
     date_of_birth = models.DateField(null=True, blank=True)
     profile_photo = models.ImageField(upload_to='profile_photos/', null=True, blank=True)
     
-    # === ADD THIS LINE ===
+    # === ADD ROLE FIELD ===
+    ADMIN = 'Admin'
+    LIBRARIAN = 'Librarian'
+    MEMBER = 'Member'
+    ROLE_CHOICES = [
+        (ADMIN, 'Admin'),
+        (LIBRARIAN, 'Librarian'),
+        (MEMBER, 'Member'),
+    ]
+    role = models.CharField(
+        max_length=20, 
+        choices=ROLE_CHOICES, 
+        default=MEMBER
+    )
+    # ======================
+    
     objects = CustomUserManager()
-    # =====================
     
     def __str__(self):
         return self.username
-    
-
-# class UserPermission(models.Model):
-#     is_admin = models.BooleanField(default=False)
-#     can_add_book = models.BooleanField(default=False)
-#     can_delete_book = models.BooleanField(default=False)
-#     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='permissions')

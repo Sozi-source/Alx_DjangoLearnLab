@@ -121,7 +121,7 @@ STATIC_URL = 'static/'
 
 # AUTHENTICATION
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'list_books'
+LOGIN_REDIRECT_URL = '/bookshelf/books/'
 LOGOUT_REDIRECT_URL = 'login'
 
 # Custom User Model
