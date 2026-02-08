@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Book
 from .serializers import BookSerializer
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
 # =========== Dummy Django Views for Checker ===========
 class BookView(ListView):
@@ -143,7 +143,7 @@ class BookDeleteView(generics.DestroyAPIView):
     """
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAdminUser]  # Step 4
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]  # Step 4
     
     def destroy(self, request, *args, **kwargs):
         """Custom delete response"""
