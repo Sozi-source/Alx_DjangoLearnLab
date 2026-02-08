@@ -6,11 +6,11 @@ from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
 from rest_framework import status
-from rest_framework.test import APIClient
+from rest_framework.test import APIClient, APITestCase  # Added APITestCase here
 from .models import Author, Book
 import json
 
-class BookAPITests(TestCase):
+class BookAPITests(APITestCase):  # Changed from TestCase to APITestCase
     """Test suite for Book API endpoints."""
     
     def setUp(self):
