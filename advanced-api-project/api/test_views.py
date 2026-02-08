@@ -6,11 +6,11 @@ from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
 from rest_framework import status
-from rest_framework.test import APIClient, APITestCase  # Added APITestCase here
+from rest_framework.test import APIClient, APITestCase
 from .models import Author, Book
 import json
 
-class BookAPITests(APITestCase):  # Changed from TestCase to APITestCase
+class BookAPITests(APITestCase):
     """Test suite for Book API endpoints."""
     
     def setUp(self):
@@ -155,9 +155,12 @@ class BookAPITests(APITestCase):  # Changed from TestCase to APITestCase
         
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
     
-    def test_create_book_authenticated(self):
-        """Test that authenticated users can create books."""
-        self.client.force_authenticate(user=self.normal_user)
+    def test_create_book_with_login(self):
+        """Test creating a book using login method."""
+        # Login using username and password
+        login_success = self.client.login(username='testuser', password='testpass123')
+        self.assertTrue(login_success)
+        
         url = reverse('book-create')
         data = {
             'title': 'The Great Gatsby',
@@ -170,6 +173,23 @@ class BookAPITests(APITestCase):  # Changed from TestCase to APITestCase
         self.assertEqual(response.data['status'], 'success')
         self.assertEqual(response.data['data']['title'], 'The Great Gatsby')
         self.assertEqual(Book.objects.count(), 4)  # 3 original + 1 new
+        
+        # Logout after test
+        self.client.logout()
+    
+    def test_create_book_authenticated(self):
+        """Test that authenticated users can create books."""
+        self.client.force_authenticate(user=self.normal_user)
+        url = reverse('book-create')
+        data = {
+            'title': 'The Catcher in the Rye',
+            'author': self.author1.id,
+            'publication_year': 1951
+        }
+        response = self.client.post(url, data, format='json')
+        
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Book.objects.count(), 4)
     
     def test_create_book_with_future_publication_year(self):
         """Test validation for future publication year."""
@@ -208,6 +228,27 @@ class BookAPITests(APITestCase):  # Changed from TestCase to APITestCase
         response = self.client.put(url, data, format='json')
         
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    
+    def test_update_book_with_login(self):
+        """Test updating a book using login method."""
+        # Login using username and password
+        self.client.login(username='testuser', password='testpass123')
+        
+        url = reverse('book-update', kwargs={'pk': self.book1.id})
+        data = {
+            'title': 'Harry Potter - Updated via Login',
+            'author': self.author1.id,
+            'publication_year': 1997
+        }
+        response = self.client.put(url, data, format='json')
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['status'], 'success')
+        self.book1.refresh_from_db()
+        self.assertEqual(self.book1.title, 'Harry Potter - Updated via Login')
+        
+        # Logout after test
+        self.client.logout()
     
     def test_update_book_authenticated(self):
         """Test that authenticated users can update books."""
@@ -253,6 +294,21 @@ class BookAPITests(APITestCase):  # Changed from TestCase to APITestCase
         
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
     
+    def test_delete_book_with_admin_login(self):
+        """Test that admin users can delete books using login."""
+        # Admin login
+        self.client.login(username='admin', password='adminpass123')
+        
+        url = reverse('book-delete', kwargs={'pk': self.book1.id})
+        response = self.client.delete(url)
+        
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Book.objects.count(), 2)  # Should be 2 books left
+        self.assertFalse(Book.objects.filter(id=self.book1.id).exists())
+        
+        # Logout after test
+        self.client.logout()
+    
     def test_delete_book_admin(self):
         """Test that admin users can delete books."""
         self.client.force_authenticate(user=self.admin_user)
@@ -260,8 +316,42 @@ class BookAPITests(APITestCase):  # Changed from TestCase to APITestCase
         response = self.client.delete(url)
         
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Book.objects.count(), 2)  # Should be 2 books left
-        self.assertFalse(Book.objects.filter(id=self.book1.id).exists())
+        self.assertEqual(Book.objects.count(), 2)
+    
+    # ==================== LOGIN/LOGOUT TESTS ====================
+    
+    def test_login_functionality(self):
+        """Test login and logout functionality."""
+        # Test successful login
+        login_result = self.client.login(username='testuser', password='testpass123')
+        self.assertTrue(login_result)
+        
+        # Make authenticated request
+        url = reverse('book-create')
+        data = {
+            'title': 'Test Book After Login',
+            'author': self.author1.id,
+            'publication_year': 2023
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        # Test logout
+        self.client.logout()
+        
+        # Should now be unauthenticated
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    
+    def test_invalid_login(self):
+        """Test login with invalid credentials."""
+        # Wrong password
+        login_result = self.client.login(username='testuser', password='wrongpassword')
+        self.assertFalse(login_result)
+        
+        # Non-existent user
+        login_result = self.client.login(username='nonexistent', password='testpass123')
+        self.assertFalse(login_result)
     
     # ==================== PERMISSIONS TESTS ====================
     
@@ -307,8 +397,8 @@ class BookAPITests(APITestCase):  # Changed from TestCase to APITestCase
         )
         self.assertEqual(create_response.status_code, status.HTTP_401_UNAUTHORIZED)
         
-        # Step 2: Authenticate and create (should succeed)
-        self.client.force_authenticate(user=self.normal_user)
+        # Step 2: Authenticate with login and create (should succeed)
+        self.client.login(username='testuser', password='testpass123')
         create_response = self.client.post(
             reverse('book-create'), data, format='json'
         )
@@ -332,12 +422,18 @@ class BookAPITests(APITestCase):  # Changed from TestCase to APITestCase
         )
         self.assertEqual(delete_response.status_code, status.HTTP_403_FORBIDDEN)
         
-        # Step 5: Authenticate as admin and delete (should succeed)
-        self.client.force_authenticate(user=self.admin_user)
+        # Step 5: Logout non-admin and login as admin
+        self.client.logout()
+        self.client.login(username='admin', password='adminpass123')
+        
+        # Step 6: Delete as admin (should succeed)
         delete_response = self.client.delete(
             reverse('book-delete', kwargs={'pk': new_book_id})
         )
         self.assertEqual(delete_response.status_code, status.HTTP_204_NO_CONTENT)
+        
+        # Clean up
+        self.client.logout()
 
 
 class AuthorModelTests(TestCase):
