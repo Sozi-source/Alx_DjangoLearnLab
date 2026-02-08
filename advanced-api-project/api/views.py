@@ -8,8 +8,8 @@ from django.views.generic import ListView, UpdateView, DeleteView  # For checker
 from rest_framework import generics, permissions, filters, status
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Book
-from .serializers import BookSerializer
+from .models import Book, Author
+from .serializers import AuthorSerializer, BookSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from django_filters import rest_framework
 
@@ -32,12 +32,7 @@ class BookDelete(DeleteView):
 
 # 1. ListView for retrieving all books
 class BookListView(generics.ListAPIView):
-    """
-    GET: Retrieve all books with filtering, searching, and ordering
-    URL: /api/books/
-    Permissions: AllowAny (Step 4)
-    """
-    queryset = Book.objects.select_related('author').all()
+    queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [permissions.AllowAny]  # Step 4
     
@@ -48,8 +43,8 @@ class BookListView(generics.ListAPIView):
     ordering_fields = ['title', 'author__name', 'publication_year']
     ordering = ['title']  # Default ordering
     
+    # Custom filter for publication_year range
     def get_queryset(self):
-        """Custom filtering logic (Step 3)"""
         queryset = super().get_queryset()
         
         # Custom filter: publication_year range
@@ -65,25 +60,15 @@ class BookListView(generics.ListAPIView):
 
 # 2. DetailView for retrieving a single book by ID
 class BookDetailView(generics.RetrieveAPIView):
-    """
-    GET: Retrieve a single book by ID
-    URL: /api/books/<id>/
-    Permissions: AllowAny (Step 4)
-    """
     queryset = Book.objects.select_related('author').all()
     serializer_class = BookSerializer
     permission_classes = [permissions.AllowAny]  # Step 4
 
 # 3. CreateView for adding a new book
 class BookCreateView(generics.CreateAPIView):
-    """
-    POST: Add a new book with custom validation
-    URL: /api/books/create/
-    Permissions: IsAuthenticated (Step 4)
-    """
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAuthenticated]  # Step 4
+    permission_classes = [permissions.AllowAny]  # Step 4
     
     # Step 3: Customize view behavior
     def perform_create(self, serializer):
@@ -106,11 +91,6 @@ class BookCreateView(generics.CreateAPIView):
 
 # 4. UpdateView for modifying an existing book
 class BookUpdateView(generics.UpdateAPIView):
-    """
-    PUT/PATCH: Modify an existing book
-    URL: /api/books/<id>/update/
-    Permissions: IsAuthenticated (Step 4)
-    """
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [permissions.IsAuthenticated]  # Step 4
@@ -137,12 +117,7 @@ class BookUpdateView(generics.UpdateAPIView):
 
 # 5. DeleteView for removing a book
 class BookDeleteView(generics.DestroyAPIView):
-    """
-    DELETE: Remove a book
-    URL: /api/books/<id>/delete/
-    Permissions: IsAdminUser (Step 4)
-    """
-    queryset = Book.objects.all()
+    ueryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]  # Step 4
     
@@ -156,3 +131,8 @@ class BookDeleteView(generics.DestroyAPIView):
             'status': 'success',
             'message': f'Book "{book_title}" deleted successfully'
         }, status=status.HTTP_204_NO_CONTENT)
+    
+class AuthorCreateView(generics.CreateAPIView):
+    queryset = Author.objects.all()
+    serializer_class = AuthorSerializer
+    permission_classes = [permissions.AllowAny]  # Step 4
