@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-)4w2i8z!9t5_xq$1s_+32jf+juxo!1*vk%(a1lu9@6x5f9g2!4'
+SECRET_KEY = 'django-insecure--1w6f#4y@3ipn0@sm3t-*dtuyxa&!!t%b)565vp_n7sty#jz&w'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'api'
 ]
 
 MIDDLEWARE = [
@@ -49,7 +51,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'advanced_api_project.urls'
+ROOT_URLCONF = 'advanced-api-project.urls'
 
 TEMPLATES = [
     {
@@ -66,7 +68,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'advanced_api_project.wsgi.application'
+WSGI_APPLICATION = 'advanced-api-project.wsgi.application'
 
 
 # Database
