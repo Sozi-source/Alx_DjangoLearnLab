@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Book
 from .serializers import BookSerializer
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 
 # =========== Dummy Django Views for Checker ===========
 class BookView(ListView):
