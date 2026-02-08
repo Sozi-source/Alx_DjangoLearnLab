@@ -1,0 +1,7 @@
+<h1>User Profile</h1>
+<p><strong>Username:</strong> {{ user_profile.username }}</p>
+<p><strong>Email:</strong> {{ user_profile.email }}</p>
+{% if user_profile.date_of_birth %}
+    <p><strong>Date of Birth:</strong> {{ user_profile.date_of_birth }}</p>
+{% endif %}
+<a href="{% url 'book_list' %}">Back to books</a>
