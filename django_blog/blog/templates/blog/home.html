@@ -1,0 +1,40 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}Home - Django Blog{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <h1>Welcome to Django Blog</h1>
+    <p>This is a simple blog application built with Django.</p>
+    
+    <div class="home-links">
+        <h2>Quick Links</h2>
+        <ul>
+            <li><a href="{% url 'posts-list' %}">📝 View All Blog Posts</a></li>
+            
+            {% if user.is_authenticated %}
+                <li><a href="{% url 'posts-create' %}">➕ Create New Post</a></li>
+                <li><a href="{% url 'profile' %}">👤 My Profile</a></li>
+                <li><a href="{% url 'logout' %}">🚪 Logout</a></li>
+            {% else %}
+                <li><a href="{% url 'login' %}">🔑 Login</a></li>
+                <li><a href="{% url 'register' %}">📝 Register</a></li>
+            {% endif %}
+            
+            <li><a href="{% url 'home' %}">🏠 Home</a></li>
+        </ul>
+    </div>
+
+    {% if user.is_authenticated %}
+        <div class="welcome-message">
+            <h3>Welcome back, {{ user.username }}!</h3>
+            <p>Ready to share your thoughts? <a href="{% url 'posts-create' %}">Create a new post</a></p>
+        </div>
+    {% else %}
+        <div class="welcome-message">
+            <h3>Join our community!</h3>
+            <p><a href="{% url 'register' %}">Register</a> to start creating your own blog posts.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}Edit Post: {{ post.title }} - Django Blog{% endblock %}
+
+{% block content %}
+<div class="update-post-container">
+    <div class="page-header">
+        <h1>Edit Post</h1>
+        <p class="subtitle">Editing: "{{ post.title }}"</p>
+    </div>
+    
+    <form method="post" class="post-form">
+        {% csrf_token %}
+        
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <strong>Please correct the following errors:</strong>
+                <ul>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ field.label }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        
+        <div class="form-group">
+            <label for="{{ form.title.id_for_label }}">Title:</label>
+            {{ form.title }}
+            {% if form.title.help_text %}
+                <small class="help-text">{{ form.title.help_text }}</small>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.content.id_for_label }}">Content:</label>
+            {{ form.content }}
+            {% if form.content.help_text %}
+                <small class="help-text">{{ form.content.help_text }}</small>
+            {% endif %}
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Update Post</button>
+            <a href="{% url 'post-detail' post.pk %}" class="btn btn-secondary">Cancel</a>
+            <a href="{% url 'posts-list' %}" class="btn btn-secondary">Back to Posts</a>
+        </div>
+    </form>
+    
+    <div class="post-info">
+        <p><strong>Created:</strong> {{ post.published_date|date:"F j, Y" }}</p>
+        <p><strong>Author:</strong> {{ post.author.username }}</p>
+    </div>
+</div>
+{% endblock %}

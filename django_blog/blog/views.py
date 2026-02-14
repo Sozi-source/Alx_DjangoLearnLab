@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView, DetailView, ListView
+from django.views.generic import CreateView, UpdateView, DetailView, ListView, DeleteView
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -22,6 +22,7 @@ class SignupView(CreateView):
     success_url = reverse_lazy('login')
     template_name = 'registration/register.html'
 
+# CRUD FUNCTIONS
 class PostsCreateView(CreateView):
     model = Post
     fields = ['title', 'content']
@@ -45,6 +46,20 @@ class PostDetailView(DetailView):
 
     def get_object(self):
         return super().get_object()
+    
+class PostUpdateView(UpdateView):
+    model = Post
+    fields = ['title', 'content']
+    template_name = 'blog/post_update.html'
+    success_url= reverse_lazy('posts-list')
+
+class PostDeleteView(DeleteView):
+    model = Post
+    template_name ='blog/post_delete.html'
+    success_url = reverse_lazy('posts-list')
+    context_object_name = 'post'
+
+
     
 class UserProfileView(RetrieveUpdateAPIView):
     model = User

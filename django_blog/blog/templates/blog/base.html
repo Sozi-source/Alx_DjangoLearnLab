@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Django Blog{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">🏠 Home</a></li>
+                <li><a href="{% url 'posts-list' %}">📝 Blog Posts</a></li>
+                
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'posts-create' %}">➕ New Post</a></li>
+                    <li><a href="{% url 'profile' %}">👤 Profile</a></li>
+                    <li><a href="{% url 'logout' %}">🚪 Logout ({{ user.username }})</a></li>
+                {% else %}
+                    <li><a href="{% url 'login' %}">🔑 Login</a></li>
+                    <li><a href="{% url 'register' %}">📝 Register</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="content">
+        {% block content %}
+        <!-- Page-specific content goes here -->
+        {% endblock %}
+    </div>
+
+    <footer>
+        <p>&copy; {% now "Y" %} Django Blog. All rights reserved.</p>
+    </footer>
+
+    <script src="{% static 'js/scripts.js' %}"></script>
+</body>
+</html>
