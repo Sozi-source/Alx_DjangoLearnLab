@@ -1,9 +1,8 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import Profile, Comment
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic import CreateView, UpdateView
+from .models import Profile, Comment, Post  # Added Post import
+from taggit.forms import TagWidget  # Keep this import
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -12,6 +11,7 @@ class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = User
         fields = ['username', 'email', 'password1', 'password2']
+
 
 class UserUpdateForm(forms.ModelForm):
     email = forms.EmailField()
@@ -28,6 +28,7 @@ class UserUpdateForm(forms.ModelForm):
             raise forms.ValidationError('This email is already in use.')
         return email
 
+
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:
         model = Profile
@@ -36,6 +37,7 @@ class ProfileUpdateForm(forms.ModelForm):
             'bio': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Tell us about yourself...'}),
             'birth_date': forms.DateInput(attrs={'type': 'date'}),
         }
+
 
 class CommentForm(forms.ModelForm):
     class Meta:
@@ -47,42 +49,21 @@ class CommentForm(forms.ModelForm):
                 'rows': 3
             })
         }
+    
     def clean_content(self):
         content = self.cleaned_data.get('content')
         if not content or not content.strip():
             raise forms.ValidationError("Comment cannot be empty.")
         return content.strip()
-    
 
-from django import forms
-from .models import Post, Comment
-from taggit.forms import TagWidget  # Optional: for better tag input
 
 class PostForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ['title', 'content', 'tags']
         widgets = {
-            'tags': TagWidget(attrs={'placeholder': 'Add tags separated by commas'}),  # Optional styling
+            'tags': TagWidget(attrs={'placeholder': 'Add tags separated by commas'}),
         }
         help_texts = {
             'tags': 'Enter tags separated by commas (e.g., python, django, tutorial)',
         }
-
-class PostCreateView(LoginRequiredMixin, CreateView):
-    model = Post
-    fields = ['title', 'content', 'tags']  # Include tags field
-    template_name = 'blog/post_form.html'
-    
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        return super().form_valid(form)
-
-class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-    model = Post
-    fields = ['title', 'content', 'tags']  # Include tags field
-    template_name = 'blog/post_form.html'
-    
-    def test_func(self):
-        post = self.get_object()
-        return self.request.user == post.author
