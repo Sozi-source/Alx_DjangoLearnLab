@@ -37,7 +37,7 @@ class ProfileUpdateForm(forms.ModelForm):
 
 class CommentForm(forms.ModelForm):
     class Meta:
-        model= Comment
+        model = Comment
         fields = ['content']
         widgets = {
             'content': forms.Textarea(attrs={
