@@ -15,7 +15,7 @@ User = get_user_model()
 
 # Create your views here.
 def home(request):
-    return render(request, 'home.html')
+    return render(request, 'blog/home.html')
 
 class SignupView(CreateView):
     form_class = CustomUserCreationForm
