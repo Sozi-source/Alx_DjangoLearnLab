@@ -135,30 +135,36 @@ class CommentCreateView(CreateView):
     fields = ['content']
     template_name ='blog/comment_form.html'
 
+    def dispatch(self, request, *args, **kwargs):
+        self.post = get_object_or_404(Post, pk=self.kwargs['pk'])
+        return super().dispatch(request, *args, **kwargs)
+    
     def form_valid(self, form):
-        post_id = self.kwargs.get('post_id') or self.request.POST.get('post_id')
-        if post_id:
-            form.instance.post_id = post_id
         form.instance.author = self.request.user
+        form.instance.post = self.post 
         return super().form_valid(form)
     
     def get_success_url(self):
-        return reverse_lazy('post-detail', kwargs={'pk': self.object.post.pk})
+        return reverse_lazy('post-detail', kwargs={'pk': self.post.pk})
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['post'] = self.post
+        return context
 
 class CommentListView(ListView):
     model= Comment
     fields = ['content']
     template_name ='blog/comment_list.html'
     context_object_name = 'comment'
+    ordering = ['-created_at']
 
     def get_queryset(self):
-        self.post = None
-        queryset = Comment.objects.all()
+        if 'pk' in self.kwargs:
+            self.post = get_object_or_404(Post, pk=self.kwargs['pk'])
+            return Comment.objects.filter(post=self.post).order_by('-created_at')
+        return Comment.objects.all().order_by('-created_at')
 
-        if 'post_id' in self.kwargs:
-            self.post = get_object_or_404(Post, pk=self.kwargs['post_id'])
-            queryset = queryset.filter(post=self.post)
-            return queryset.order_by('-created_at')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
