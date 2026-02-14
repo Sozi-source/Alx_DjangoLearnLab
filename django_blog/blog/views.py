@@ -2,23 +2,20 @@ from django.shortcuts import render
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, DetailView, ListView
-from django.views import generic
 from .models import Post, User, Profile
 from rest_framework.generics import RetrieveUpdateAPIView
 from django.contrib.auth import get_user_model
 from .serializers import UserSerializer, ProfileSerializer
-from .forms import CustomUserCreationForm
+from .forms import UserUpdateForm, ProfileUpdateForm
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.shortcuts import render, redirect
 
 User = get_user_model()
 
 # Create your views here.
 def home(request):
     return render(request, 'home.html')
-
-class SignupView(CreateView):
-    form_class = CustomUserCreationForm
-    success_url = reverse_lazy('login')
-    template_name = 'registration/register.html'
 
 class PostsCreateView(CreateView):
     model = Post
@@ -55,7 +52,25 @@ class UserProfileView(RetrieveUpdateAPIView):
         # Return the current authenticated user instead of a queryset
         return self.request.user
 
-class ProfileView(RetrieveUpdateAPIView):
-    model = Profile
-    fields ='__all__'
-    serializer_class = ProfileSerializer
+
+@login_required
+def Profile(request):
+    if request.method == 'POST':
+        user_form = UserUpdateForm(request.POST, instance=request.user)
+        profile_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+
+    if user_form.is_valid() and profile_form.is_valid():
+        user_form.save()  # Save user data
+        profile_form.save()  # Save profile data
+        messages.success(request, 'Profile updated successfully!')
+        return redirect('profile')
+    else:
+        # Handle GET request - display forms
+        user_form = UserUpdateForm(instance=request.user)
+        profile_form = ProfileUpdateForm(instance=request.user.profile)
+    
+    context = {
+        'user_form': user_form,
+        'profile_form': profile_form
+    }
+    return render(request, 'blog/profile.html', context)

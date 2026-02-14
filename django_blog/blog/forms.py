@@ -1,19 +1,34 @@
-# forms.py
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
-from .models import User  # Import your custom User model
+from django.contrib.auth.models import User
+from .models import Profile
 
-class CustomUserCreationForm(UserCreationForm):
-    email = forms.EmailField(required=True)
+class UserUpdateForm(forms.ModelForm):
+    """
+    Form for updating User model fields
+    """
+    email = forms.EmailField()
     
     class Meta:
-        model = User  # Use your custom User model
-        fields = ('username', 'email', 'password1', 'password2')
+        model = User
+        fields = ['username', 'email']
     
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.email = self.cleaned_data['email']
+    def clean_email(self):
+        """Validate email is unique"""
+        email = self.cleaned_data.get('email')
+        username = self.cleaned_data.get('username')
         
-        if commit:
-            user.save()
-        return user
+        if email and User.objects.filter(email=email).exclude(username=username).exists():
+            raise forms.ValidationError('This email is already in use.')
+        return email
+
+class ProfileUpdateForm(forms.ModelForm):
+    """
+    Form for updating Profile model fields
+    """
+    class Meta:
+        model = Profile
+        fields = ['bio', 'location', 'birth_date', 'profile_pic']
+        widgets = {
+            'bio': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Tell us about yourself...'}),
+            'birth_date': forms.DateInput(attrs={'type': 'date'}),
+        }
