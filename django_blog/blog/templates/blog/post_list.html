@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Blog Posts - Django Blog{% endblock %}
+
+{% block content %}
+<div class="posts-container">
+    <div class="posts-header">
+        <h2>Blog Posts</h2>
+        {% if user.is_authenticated %}
+            <a href="{% url 'posts-create' %}" class="btn btn-primary">Create New Post</a>
+        {% endif %}
+    </div>
+    
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    {% if posts %}
+        <div class="post-grid">
+            {% for post in posts %}
+                <div class="post-card">
+                    {% if post.featured_image %}
+                        <div class="post-image">
+                            <img src="{{ post.featured_image.url }}" alt="{{ post.title }}">
+                        </div>
+                    {% endif %}
+                    
+                    <div class="post-content">
+                        <h3 class="post-title">
+                            <a href="{% url 'post-detail' post.id %}">{{ post.title }}</a>
+                        </h3>
+                        
+                        <div class="post-meta">
+                            <span class="post-author">
+                            </span>
+                            <span class="post-date">{{ post.created_at|date:"F j, Y" }}</span>
+                            
+                            {% if post.category %}
+                                <span class="post-category">
+                                    Category: <a href="#">{{ post.category.name }}</a>
+                                </span>
+                            {% endif %}
+                            
+                            {% if post.status == 'draft' %}
+                                <span class="post-status draft">Draft</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="post-excerpt">
+                            {{ post.content|truncatewords:50|linebreaks }}
+                        </div>
+                        
+                        <div class="post-footer">
+                            <a href="{% url 'post-detail' post.id %}" class="read-more">Read More</a>
+                            
+                            <div class="post-stats">
+                                <span class="views">👁️ {{ post.views_count }}</span>
+                                <span class="comments">💬 {{ post.comments.count }}</span>
+                            </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        {% if is_paginated %}
+            <div class="pagination">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1">&laquo; first</a>
+                        <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                    {% endif %}
+                    
+                    <span class="current">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                    </span>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}">next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </span>
+            </div>
+        {% endif %}
+        
+    {% else %}
+        <div class="empty-state">
+            <p>No posts yet.</p>
+            {% if user.is_authenticated %}
+                <a href="{% url 'posts-create' %}" class="btn btn-primary">Create the first post!</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

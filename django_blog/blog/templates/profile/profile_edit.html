@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile - Django Blog{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <h2>Edit Profile</h2>
+    
+    {% if form.errors %}
+        <div class="alert alert-error">
+            <p>Please correct the errors below:</p>
+            <ul>
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    
+    <form method="post" enctype="multipart/form-data" class="profile-form">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="id_avatar">Profile Picture:</label>
+            {% if user.profile.avatar %}
+                <div class="current-avatar">
+                    <img src="{{ user.profile.avatar.url }}" alt="Current avatar" width="100">
+                    <p>Current avatar</p>
+                </div>
+            {% endif %}
+            <input type="file" name="avatar" id="id_avatar" class="form-control" accept="image/*">
+            <small class="help-text">Leave empty to keep current avatar.</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="id_bio">Bio:</label>
+            <textarea name="bio" id="id_bio" class="form-control" rows="5">{{ user.profile.bio|default:'' }}</textarea>
+            <small class="help-text">Tell us about yourself (max 500 characters).</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="id_location">Location:</label>
+            <input type="text" name="location" id="id_location" class="form-control" 
+                   value="{{ user.profile.location|default:'' }}">
+        </div>
+        
+        <div class="form-group">
+            <label for="id_website">Website:</label>
+            <input type="url" name="website" id="id_website" class="form-control" 
+                   value="{{ user.profile.website|default:'' }}">
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="{% url 'profile' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
