@@ -4,10 +4,21 @@
 
 {% block content %}
 <h1>Comment Detail</h1>
-<p>{{ comment.content }}</p>
-<p>By: {{ comment.author }}</p>
-<p>Posted: {{ comment.created_at }}</p>
-<a href="{% url 'comment_list' %}">Back</a>
-<a href="{% url 'comment_update' comment.pk %}">Edit</a>
-<a href="{% url 'comment_delete' comment.pk %}">Delete</a>
+
+<div class="comment-detail">
+    <p><strong>Content:</strong> {{ comment.content }}</p>
+    <p><strong>Author:</strong> {{ comment.author }}</p>
+    <p><strong>Posted on:</strong> {{ comment.created_at|date:"F j, Y, g:i a" }}</p>
+    <p><strong>Last updated:</strong> {{ comment.updated_at|date:"F j, Y, g:i a" }}</p>
+    <p><strong>Post:</strong> <a href="{% url 'post-detail' comment.post.pk %}">{{ comment.post.title }}</a></p>
+    
+    {% if user == comment.author %}
+        <div class="comment-actions">
+            <a href="{% url 'comment-update' comment.pk %}" class="btn">Edit</a>
+            <a href="{% url 'comment-delete' comment.pk %}" class="btn">Delete</a>
+        </div>
+    {% endif %}
+    
+    <a href="{% url 'post-detail' comment.post.pk %}" class="btn">Back to Post</a>
+</div>
 {% endblock %}

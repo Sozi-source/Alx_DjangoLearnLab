@@ -1,20 +1,32 @@
 {% extends 'blog/base.html' %}
 
-{% block title %}All Comments{% endblock %}
+{% block title %}Comments{% endblock %}
 
 {% block content %}
 <h1>Comments</h1>
+
+{% if post %}
+    <p>Comments for: <a href="{% url 'post-detail' post.id %}">{{ post.title }}</a></p>
+    <a href="{% url 'comment-create' post.id %}" class="btn">Add New Comment</a>
+{% else %}
+    <p>No post specified.</p>
+    <a href="{% url 'posts-list' %}" class="btn">View Posts to Comment</a>
+{% endif %}
+
 <ul>
     {% for comment in comments %}
         <li>
             {{ comment.content }}
-            <a href="{% url 'comment_detail' comment.pk %}">View</a>
-            <a href="{% url 'comment_update' comment.pk %}">Edit</a>
-            <a href="{% url 'comment_delete' comment.pk %}">Delete</a>
+            <a href="{% url 'comment-detail' comment.pk %}">View</a>
+            {% if user == comment.author %}
+                <a href="{% url 'comment-update' comment.pk %}">Edit</a>
+                <a href="{% url 'comment-delete' comment.pk %}">Delete</a>
+            {% endif %}
         </li>
     {% empty %}
         <li>No comments yet.</li>
     {% endfor %}
 </ul>
-<a href="{% url 'comment_create' %}">Add Comment</a>
+
+<a href="{% url 'posts-list' %}">Back to Posts</a>
 {% endblock %}

@@ -11,11 +11,19 @@
         <h2>Quick Links</h2>
         <ul>
             <li><a href="{% url 'posts-list' %}">📝 View All Blog Posts</a></li>
+            <li><a href="{% url 'comment-list' %}">💬 View All Comments</a></li>
             
             {% if user.is_authenticated %}
                 <li><a href="{% url 'posts-create' %}">➕ Create New Post</a></li>
+                
+                {% if first_post %}
+                    <li><a href="{% url 'comment-create' first_post.id %}">✏️ Create New Comment</a></li>
+                {% else %}
+                    <li><a href="{% url 'posts-create' %}">✏️ Create a Post First to Comment</a></li>
+                {% endif %}
+                
                 <li><a href="{% url 'profile' %}">👤 My Profile</a></li>
-                <li><a href="{% url 'logout' %}">🚪 Logout</a></li>
+                <li><a href="{% url 'logout' %}">🚪 Logout ({{ user.username }})</a></li>
             {% else %}
                 <li><a href="{% url 'login' %}">🔑 Login</a></li>
                 <li><a href="{% url 'register' %}">📝 Register</a></li>
@@ -28,13 +36,141 @@
     {% if user.is_authenticated %}
         <div class="welcome-message">
             <h3>Welcome back, {{ user.username }}!</h3>
-            <p>Ready to share your thoughts? <a href="{% url 'posts-create' %}">Create a new post</a></p>
+            <p>
+                Ready to share your thoughts? 
+                <a href="{% url 'posts-create' %}">Create a new post</a> 
+                {% if first_post %}
+                    or <a href="{% url 'comment-create' first_post.id %}">leave a comment</a>.
+                {% endif %}
+            </p>
+        </div>
+        
+        <!-- User's Recent Comments Section -->
+        <div class="recent-comments">
+            <h3>Your Recent Comments</h3>
+            {% if user_comments %}
+                <ul>
+                    {% for comment in user_comments %}
+                        <li>
+                            <a href="{% url 'comment-detail' comment.pk %}">
+                                On "{{ comment.post.title }}": "{{ comment.content|truncatechars:50 }}"
+                            </a>
+                            <small>
+                                (<a href="{% url 'comment-update' comment.pk %}">Edit</a> | 
+                                <a href="{% url 'comment-delete' comment.pk %}">Delete</a>)
+                            </small>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <a href="{% url 'comment-list' %}">View all comments →</a>
+            {% else %}
+                <p>You haven't made any comments yet. 
+                {% if first_post %}
+                    <a href="{% url 'comment-create' first_post.id %}">Create your first comment</a>.
+                {% else %}
+                    <a href="{% url 'posts-create' %}">Create a post first</a> to start commenting.
+                {% endif %}
+                </p>
+            {% endif %}
         </div>
     {% else %}
         <div class="welcome-message">
             <h3>Join our community!</h3>
-            <p><a href="{% url 'register' %}">Register</a> to start creating your own blog posts.</p>
+            <p>
+                <a href="{% url 'register' %}">Register</a> or 
+                <a href="{% url 'login' %}">login</a> to start creating your own blog posts and comments.
+            </p>
         </div>
     {% endif %}
 </div>
+
+<!-- Recent Activity Section -->
+<div class="recent-activity">
+    <h3>Recent Activity</h3>
+    
+    <div class="latest-posts">
+        <h4>Latest Posts</h4>
+        {% if posts %}
+            <ul>
+                {% for post in posts %}
+                    <li>
+                        <a href="{% url 'post-detail' post.pk %}">{{ post.title }}</a>
+                        <small>by {{ post.author }}</small>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No posts yet. <a href="{% url 'posts-create' %}">Be the first to post!</a></p>
+        {% endif %}
+    </div>
+    
+    <div class="latest-comments">
+        <h4>Latest Comments</h4>
+        {% if comments %}
+            <ul>
+                {% for comment in comments %}
+                    <li>
+                        <a href="{% url 'comment-detail' comment.pk %}">
+                            {{ comment.author }} on "{{ comment.post.title }}"
+                        </a>
+                        <small>"{{ comment.content|truncatechars:30 }}"</small>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No comments yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Add some basic styling -->
+<style>
+    .home-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .home-links ul {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .home-links li {
+        margin: 10px 0;
+    }
+    
+    .home-links a {
+        text-decoration: none;
+        color: #007bff;
+        font-size: 1.1em;
+    }
+    
+    .home-links a:hover {
+        text-decoration: underline;
+    }
+    
+    .welcome-message {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 5px;
+        margin: 20px 0;
+    }
+    
+    .recent-comments, .recent-activity {
+        margin-top: 30px;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+    }
+    
+    .latest-posts, .latest-comments {
+        margin: 15px 0;
+    }
+    
+    small {
+        color: #6c757d;
+        font-size: 0.9em;
+    }
+</style>
 {% endblock %}

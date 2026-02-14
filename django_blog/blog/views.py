@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, DetailView, ListView, DeleteView
@@ -15,7 +15,21 @@ User = get_user_model()
 
 # Create your views here.
 def home(request):
-    return render(request, 'blog/home.html')
+    posts = Post.objects.all().order_by('-published_date')[:5]
+    comments = Comment.objects.all().order_by('-created_at')[:5]
+    first_post = Post.objects.first()
+    
+    user_comments = []
+    if request.user.is_authenticated:
+        user_comments = Comment.objects.filter(author=request.user).order_by('-created_at')[:5]
+    
+    context = {
+        'posts': posts,
+        'comments': comments,
+        'first_post': first_post,
+        'user_comments': user_comments,
+    }
+    return render(request, 'blog/home.html', context)
 
 class SignupView(CreateView):
     form_class = CustomUserCreationForm
@@ -135,13 +149,23 @@ class CommentListView(ListView):
     model= Comment
     fields = ['content']
     template_name ='blog/comment_list.html'
-    ordering = ['-created_at']
+    context_object_name = 'comment'
 
     def get_queryset(self):
-        post_id = self.kwargs.get('post_id')
-        if post_id:
-            return Comment.objects.filter(post_id=post_id).order_by('-created_at')
-        return Comment.objects.all().order_by('-created_at')
+        self.post = None
+        queryset = Comment.objects.all()
+
+        if 'post_id' in self.kwargs:
+            self.post = get_object_or_404(Post, pk=self.kwargs['post_id'])
+            queryset = queryset.filter(post=self.post)
+            return queryset.order_by('-created_at')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if hasattr(self, 'post') and self.post:
+            context['post'] = self.post
+        return context
+
 
 class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model= Comment
@@ -178,3 +202,10 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
             return redirect(f"{reverse_lazy('login')}?next={self.request.path}")
         messages.error(self.request, "You don't have permission to delete this comment")
         return redirect('post-detail', pk=self.get_object().post.pk)
+    
+class CommentDetailView(DetailView):
+    model =Comment
+    template_name = 'blog/comment_detail.html'
+    context_object_name = 'comment'
+
+    

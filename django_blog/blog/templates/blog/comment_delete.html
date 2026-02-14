@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'blog/base.html' %}
 
 {% block title %}Delete Comment{% endblock %}
 
@@ -9,6 +9,6 @@
 <form method="post">
     {% csrf_token %}
     <button type="submit">Yes, delete</button>
-    <a href="{% url 'comment_list' %}">Cancel</a>
+    <a href="{% url 'comment-list' %}">Cancel</a>
 </form>
 {% endblock %}
