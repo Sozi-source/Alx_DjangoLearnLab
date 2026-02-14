@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-from .models import Profile
+from .models import Profile, Comment
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -12,9 +12,6 @@ class CustomUserCreationForm(UserCreationForm):
         fields = ['username', 'email', 'password1', 'password2']
 
 class UserUpdateForm(forms.ModelForm):
-    """
-    Form for updating User model fields
-    """
     email = forms.EmailField()
     
     class Meta:
@@ -22,7 +19,6 @@ class UserUpdateForm(forms.ModelForm):
         fields = ['username', 'email']
     
     def clean_email(self):
-        """Validate email is unique"""
         email = self.cleaned_data.get('email')
         username = self.cleaned_data.get('username')
         
@@ -31,9 +27,6 @@ class UserUpdateForm(forms.ModelForm):
         return email
 
 class ProfileUpdateForm(forms.ModelForm):
-    """
-    Form for updating Profile model fields
-    """
     class Meta:
         model = Profile
         fields = ['bio', 'location', 'birth_date', 'profile_pic']
@@ -41,3 +34,19 @@ class ProfileUpdateForm(forms.ModelForm):
             'bio': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Tell us about yourself...'}),
             'birth_date': forms.DateInput(attrs={'type': 'date'}),
         }
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model= Comment
+        fields = ['content']
+        widgets = {
+            'content': forms.Textarea(attrs={
+                'placeholder': 'Write your comment...',
+                'rows': 3
+            })
+        }
+    def clean_content(self):
+        content = self.cleaned_data.get('content')
+        if not content or not content.strip():
+            raise forms.ValidationError("Comment cannot be empty.")
+        return content.strip()

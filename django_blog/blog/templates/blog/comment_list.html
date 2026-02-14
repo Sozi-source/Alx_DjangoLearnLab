@@ -1,0 +1,20 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}All Comments{% endblock %}
+
+{% block content %}
+<h1>Comments</h1>
+<ul>
+    {% for comment in comments %}
+        <li>
+            {{ comment.content }}
+            <a href="{% url 'comment_detail' comment.pk %}">View</a>
+            <a href="{% url 'comment_update' comment.pk %}">Edit</a>
+            <a href="{% url 'comment_delete' comment.pk %}">Delete</a>
+        </li>
+    {% empty %}
+        <li>No comments yet.</li>
+    {% endfor %}
+</ul>
+<a href="{% url 'comment_create' %}">Add Comment</a>
+{% endblock %}

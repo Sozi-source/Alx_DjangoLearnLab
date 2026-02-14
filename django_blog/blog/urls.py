@@ -20,4 +20,8 @@ urlpatterns = [
     
     # Profile
     path('profile/', views.profile, name='profile'),
+
+    # url for comments
+    path('comment/', views.CommentCreateView.as_view(), name='comment')
+
 ]

@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from rest_framework.generics import RetrieveUpdateAPIView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin 
-from .models import Post, Profile
+from .models import Post, Comment
 from .serializers import UserSerializer
 from .forms import UserUpdateForm, ProfileUpdateForm, CustomUserCreationForm
 
@@ -22,7 +22,7 @@ class SignupView(CreateView):
     success_url = reverse_lazy('login')
     template_name = 'registration/register.html'
 
-# CRUD FUNCTIONS
+# CRUD OPERATION FOR POST
 class PostsCreateView(LoginRequiredMixin, CreateView):
     model = Post
     fields = ['title', 'content']
@@ -114,3 +114,67 @@ def profile(request):  # Changed from Profile to profile (lowercase)
         'profile_form': profile_form
     }
     return render(request, 'blog/profile.html', context)
+
+# CRUD OPERATION FOR COMMENTS
+class CommentCreateView(CreateView):
+    model= Comment
+    fields = ['content']
+    template_name ='blog/comment_form.html'
+
+    def form_valid(self, form):
+        post_id = self.kwargs.get('post_id') or self.request.POST.get('post_id')
+        if post_id:
+            form.instance.post_id = post_id
+        form.instance.author = self.request.user
+        return super().form_valid(form)
+    
+    def get_success_url(self):
+        return reverse_lazy('post-detail', kwargs={'pk': self.object.post.pk})
+
+class CommentListView(ListView):
+    model= Comment
+    fields = ['content']
+    template_name ='blog/comment_list.html'
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        post_id = self.kwargs.get('post_id')
+        if post_id:
+            return Comment.objects.filter(post_id=post_id).order_by('-created_at')
+        return Comment.objects.all().order_by('-created_at')
+
+class CommentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model= Comment
+    fields = ['content']
+    template_name ='blog/comment_form.html'
+
+    def test_func(self):
+        comment = self.get_object()
+        return self.request.user == comment.author
+    
+    def get_success_url(self):
+        return reverse_lazy('post-detail', kwargs={'pk': self.object.post.pk})
+    
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return redirect(f"{reverse_lazy('login')}?next={self.request.path}")
+        messages.error(self.request, "You don't have permission to edit this comment")
+        return redirect('post-detail', pk=self.get_object().post.pk)
+
+class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model= Comment
+    fields = ['content']
+    template_name ='blog/comment_delete.html'
+
+    def test_func(self):
+        comment = self.get_object()
+        return self.request.user == comment.author
+    
+    def get_success_url(self):
+        return reverse_lazy('post-detail', kwargs={'pk': self.object.post.pk})
+    
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return redirect(f"{reverse_lazy('login')}?next={self.request.path}")
+        messages.error(self.request, "You don't have permission to delete this comment")
+        return redirect('post-detail', pk=self.get_object().post.pk)
