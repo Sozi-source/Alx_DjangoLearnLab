@@ -22,7 +22,7 @@ class Profile(models.Model):
     bio = models.TextField(max_length=500, null=True, blank=True)
     location = models.CharField(max_length=50, blank=True, null=True)
     birth_date = models.DateField(null=True, blank=True)
-    profile_picture = models.ImageField(upload_to='profile/', null=True, blank=True)
+    profile_pic = models.ImageField(upload_to='profile/', null=True, blank=True)
     
     def __str__(self):
         return self.user.username

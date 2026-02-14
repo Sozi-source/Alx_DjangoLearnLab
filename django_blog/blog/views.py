@@ -1,21 +1,26 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, DetailView, ListView
-from .models import Post, User, Profile
-from rest_framework.generics import RetrieveUpdateAPIView
-from django.contrib.auth import get_user_model
-from .serializers import UserSerializer, ProfileSerializer
-from .forms import UserUpdateForm, ProfileUpdateForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.shortcuts import render, redirect
+from django.contrib.auth import get_user_model
+from rest_framework.generics import RetrieveUpdateAPIView
+
+from .models import Post, Profile
+from .serializers import UserSerializer, ProfileSerializer
+from .forms import UserUpdateForm, ProfileUpdateForm, CustomUserCreationForm
 
 User = get_user_model()
 
 # Create your views here.
 def home(request):
     return render(request, 'home.html')
+
+class SignupView(CreateView):
+    form_class = CustomUserCreationForm
+    success_url = reverse_lazy('login')
+    template_name = 'registration/register.html'
 
 class PostsCreateView(CreateView):
     model = Post
@@ -28,21 +33,19 @@ class PostsCreateView(CreateView):
         return super().form_valid(form)
     
 class PostListView(ListView):
-    model =Post
+    model = Post
     template_name = 'blog/post_list.html'
     context_object_name = 'posts'
     ordering = ['-published_date'] 
 
 class PostDetailView(DetailView):
-    model= Post
+    model = Post
     template_name = 'blog/post_details.html'
     context_object_name = 'post'
 
     def get_object(self):
         return super().get_object()
     
-       
-
 class UserProfileView(RetrieveUpdateAPIView):
     model = User
     fields = '__all__'
@@ -52,18 +55,19 @@ class UserProfileView(RetrieveUpdateAPIView):
         # Return the current authenticated user instead of a queryset
         return self.request.user
 
-
+# FIXED PROFILE VIEW
 @login_required
-def Profile(request):
+def profile(request):  # Changed from Profile to profile (lowercase)
     if request.method == 'POST':
         user_form = UserUpdateForm(request.POST, instance=request.user)
         profile_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
-
-    if user_form.is_valid() and profile_form.is_valid():
-        user_form.save()  # Save user data
-        profile_form.save()  # Save profile data
-        messages.success(request, 'Profile updated successfully!')
-        return redirect('profile')
+        
+        # Fixed indentation - this should be inside the POST block
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()  # Save user data
+            profile_form.save()  # Save profile data
+            messages.success(request, 'Profile updated successfully!')
+            return redirect('profile')
     else:
         # Handle GET request - display forms
         user_form = UserUpdateForm(instance=request.user)
