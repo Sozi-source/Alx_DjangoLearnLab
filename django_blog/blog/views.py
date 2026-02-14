@@ -3,10 +3,10 @@ from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, DetailView, ListView
 from django.views import generic
-from .models import Post, User
+from .models import Post, User, Profile
 from rest_framework.generics import RetrieveUpdateAPIView
 from django.contrib.auth import get_user_model
-from .serializers import UserSerializer
+from .serializers import UserSerializer, ProfileSerializer
 from .forms import CustomUserCreationForm
 
 User = get_user_model()
@@ -55,4 +55,7 @@ class UserProfileView(RetrieveUpdateAPIView):
         # Return the current authenticated user instead of a queryset
         return self.request.user
 
-
+class ProfileView(RetrieveUpdateAPIView):
+    model = Profile
+    fields ='__all__'
+    serializer_class = ProfileSerializer

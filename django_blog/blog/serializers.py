@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post, User
+from .models import Post, User, Profile
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,3 +24,8 @@ class PostSerializer(serializers.ModelSerializer):
             'status'
         ]
         read_only_fields = ['id', 'created_date']
+
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Profile
+        fields ='__all__'
