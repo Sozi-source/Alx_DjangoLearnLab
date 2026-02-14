@@ -6,9 +6,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from rest_framework.generics import RetrieveUpdateAPIView
-
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin 
 from .models import Post, Profile
-from .serializers import UserSerializer, ProfileSerializer
+from .serializers import UserSerializer
 from .forms import UserUpdateForm, ProfileUpdateForm, CustomUserCreationForm
 
 User = get_user_model()
@@ -23,7 +23,7 @@ class SignupView(CreateView):
     template_name = 'registration/register.html'
 
 # CRUD FUNCTIONS
-class PostsCreateView(CreateView):
+class PostsCreateView(LoginRequiredMixin, CreateView):
     model = Post
     fields = ['title', 'content']
     template_name = 'blog/post_form.html'
@@ -47,17 +47,38 @@ class PostDetailView(DetailView):
     def get_object(self):
         return super().get_object()
     
-class PostUpdateView(UpdateView):
+class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Post
     fields = ['title', 'content']
     template_name = 'blog/post_update.html'
     success_url= reverse_lazy('posts-list')
 
-class PostDeleteView(DeleteView):
+    def test_func(self):
+        post = self.get_object()
+        return self.request.user == post.author
+    
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return redirect(f"{reverse_lazy('login')}?next={self.request.path}")
+        messages.error(self.request, 'You dont  have permissions to edit this post')
+        return redirect('post-detail', pk=self.kwargs['pk'])
+       
+
+class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Post
     template_name ='blog/post_delete.html'
     success_url = reverse_lazy('posts-list')
     context_object_name = 'post'
+
+    def test_func(self):
+        post = self.get_object()
+        return self.request.user == post.author
+    
+    def handle_no_permission(self):
+        if not self.request.user.is_authenticated:
+            return redirect(f"{reverse_lazy('login')}?next={self.request.path}")
+        messages.error(self.request, 'You dont  have permissions to delete this post')
+        return redirect('post-detail', pk=self.kwargs['pk'])
 
 
     
