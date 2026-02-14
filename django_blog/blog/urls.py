@@ -27,7 +27,7 @@ urlpatterns = [
     
     # Post-specific comments (more intuitive)
     path('post/<int:post_id>/comments/', views.CommentListView.as_view(), name='post-comments'),
-    path('post/<int:post_id>/comment/new/', views.CommentCreateView.as_view(), name='comment-create'),
+    path('post/<int:post_id>/comments/new/', views.CommentCreateView.as_view(), name='comment-create'),
     
     # Individual comment operations
     path('comment/<int:pk>/', views.CommentDetailView.as_view(), name='comment-detail'),
