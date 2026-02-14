@@ -10,7 +10,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .models import Post, Comment
 from .serializers import UserSerializer
 from .forms import UserUpdateForm, ProfileUpdateForm, CustomUserCreationForm
-
+from django.db.models import Q
 User = get_user_model()
 
 # Create your views here.
@@ -214,4 +214,24 @@ class CommentDetailView(DetailView):
     template_name = 'blog/comment_detail.html'
     context_object_name = 'comment'
 
+
+# search view
+class PostSearchView(ListView):
+    model = Post
+    template_name = 'blog/search_results.html'
+    context_object_name = 'posts'
     
+    def get_queryset(self):
+        query = self.request.GET.get('q')
+        if query:
+            return Post.objects.filter(
+                Q(title__icontains=query) |
+                Q(content__icontains=query) |
+                Q(tags__name__icontains=query)
+            ).distinct().order_by('-published_date')
+        return Post.objects.none()
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['query'] = self.request.GET.get('q', '')
+        return context
